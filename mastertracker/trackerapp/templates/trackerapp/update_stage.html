@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Update Stage Period</title>
+<style>
+  body {
+    font-family: Arial, sans-serif;
+    margin: 2rem;
+  }
+  form {
+    max-width: 500px;
+  }
+  label, input, select {
+    display: block;
+    width: 100%;
+    margin-bottom: 0.5rem;
+  }
+  input[type="text"], input[type="date"], select {
+    padding: 8px;
+    font-size: 14px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+  }
+  input[type="submit"] {
+    background-color: #1f78b4;
+    color: white;
+    padding: 8px 12px;
+    border: none;
+    cursor: pointer;
+    font-size: 14px;
+    border-radius: 4px;
+    margin-top: 1rem;
+  }
+  input[type="submit"]:hover {
+    background-color: #166494;
+  }
+  a {
+    display: inline-block;
+    margin-top: 1rem;
+    text-decoration: none;
+    color: #1f78b4;
+  }
+  .stage-info {
+    margin-top: 1rem;
+    padding: 1rem;
+    background-color: #f8f8f8;
+    border-radius: 4px;
+  }
+  .stage-number {
+    font-weight: bold;
+    margin-right: 5px;
+  }
+  .error-message {
+    background-color: #ffebee;
+    color: #c62828;
+    padding: 10px;
+    border-radius: 4px;
+    margin-bottom: 15px;
+    border-left: 4px solid #c62828;
+  }
+</style>
+</head>
+<body>
+  <h2>Update Stage Period</h2>
+  
+  {% if error_message %}
+  <div class="error-message">
+    {{ error_message }}
+  </div>
+  {% endif %}
+  
+  <form method="post">
+    {% csrf_token %}
+    {{ form.as_p }}
+    <div class="stage-info">
+      <h3>Stage Reference (0-25)</h3>
+      {% for stage_key, number in stage_order.items %}
+        <div>
+          <span class="stage-number">{{ number }}:</span> {{ stage_key.label }}
+        </div>
+      {% endfor %}
+    </div>
+    <input type="submit" value="Save Stage" />
+  </form>
+  <a href="{% url 'demand_list' %}">Back to timeline</a>
+</body>
+</html>
