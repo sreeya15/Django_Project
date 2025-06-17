@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Add New Demand</title>
+<style>
+  body {
+    font-family: Arial, sans-serif;
+    margin: 2rem;
+  }
+  form {
+    max-width: 400px;
+  }
+  label, input {
+    display: block;
+    width: 100%;
+    margin-bottom: 0.5rem;
+  }
+  input[type="text"] {
+    padding: 8px;
+    font-size: 14px;
+  }
+  input[type="submit"] {
+    background-color: #1f78b4;
+    color: white;
+    padding: 8px 12px;
+    border: none;
+    cursor: pointer;
+    font-size: 14px;
+    border-radius: 4px;
+  }
+  input[type="submit"]:hover {
+    background-color: #166494;
+  }
+  a {
+    display: inline-block;
+    margin-top: 1rem;
+    text-decoration: none;
+    color: #1f78b4;
+  }
+</style>
+</head>
+<body>
+  <h2>Add New Demand</h2>
+  <form method="post">
+    {% csrf_token %}
+    {{ form.as_p }}
+    <input type="submit" value="Add Demand" />
+  </form>
+  <a href="{% url 'demand_list' %}">Back to timeline</a>
+</body>
+</html>
+
