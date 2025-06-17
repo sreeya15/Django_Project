@@ -476,8 +476,8 @@
                             data-end-date="{{ stage.end_date }}"
                             onclick="openModal(this)"
                           >
-                            {% if stage.stage != 'mini_progress' %}
-                              <span class="stage-number">{{ stage.stage_number }}</span>
+                            {% if stage.should_show_number %}
+                              <span class="stage-number">{{ stage.number }}</span>
                             {% endif %}
                             <div class="tooltip">
                               {% if stage.stage == 'mini_progress' %}
