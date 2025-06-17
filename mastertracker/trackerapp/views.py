@@ -163,12 +163,54 @@ def demand_list(request):
             stage_start_percent = demand_start_percent + (demand_width_percent * stage_relative_start / 100)
             stage_width_percent = demand_width_percent * stage_relative_width / 100
             
+            # Calculate positions for fixed timeline 2025-2029 by months for more precision
+            # Each year is 20% of timeline (5 years total)
+            # Each month is 1.667% of the timeline (12 months per year)
+            start_year = s.start_date.year
+            start_month = s.start_date.month
+            start_day = s.start_date.day
+            
+            end_year = s.end_date.year
+            end_month = s.end_date.month
+            end_day = s.end_date.day
+            
+            # Calculate month-based positions (more precise than quarters)
+            # For each year, add 20% to the position
+            # For each month, add 1.667% to the position
+            year_diff_start = start_year - 2025
+            month_position_start = (start_month - 1) * (20/12)  # Each month is 1/12 of a year's 20%
+            # Add partial month based on day (optional for more precision)
+            day_position_start = (start_day - 1) * (20/12/30)  # Approximate days in month
+            
+            year_diff_end = end_year - 2025
+            month_position_end = (end_month - 1) * (20/12)
+            # Add partial month based on day (optional for more precision)
+            day_position_end = (end_day - 1) * (20/12/30)  # Approximate days in month
+            
+            # Final positions as percentages
+            start_pos = (year_diff_start * 20) + month_position_start + day_position_start
+            end_pos = (year_diff_end * 20) + month_position_end + day_position_end
+            
+            # Calculate width precisely based on actual start and end positions
+            width = end_pos - start_pos
+            
+            # For quarter display in the template, still keep quarter calculations
+            start_quarter = (start_month - 1) // 3
+            end_quarter = (end_month - 1) // 3
+            
+            # Handle stage number and label safely based on stage type
             stage_number = STAGE_ORDER.get(s.stage, 0)
+            # Check if this is our custom mini progress stage
+            if s.stage == 'mini_progress':
+                stage_verbose = "Duration"
+            else:
+                stage_verbose = Stage(s.stage).label
+                
             stage_bars.append({
                 'id': s.id,
                 'stage': s.stage,
                 'stage_number': stage_number,
-                'stage_verbose': Stage(s.stage).label,
+                'stage_verbose': stage_verbose,
                 'color': STAGE_COLORS.get(s.stage, '#888'),
                 'start_percent': stage_start_percent,
                 'width_percent': stage_width_percent,
@@ -177,6 +219,16 @@ def demand_list(request):
                 'duration': stage_duration,
                 'start_date': s.start_date.strftime('%Y-%m-%d'),
                 'end_date': s.end_date.strftime('%Y-%m-%d'),
+                # Add quarter calculation data for the static timeline
+                'start_year': start_year,
+                'start_month': start_month,
+                'start_quarter': start_quarter,
+                'end_year': end_year,
+                'end_month': end_month,
+                'end_quarter': end_quarter,
+                'quarter_start_pos': start_pos,
+                'quarter_end_pos': end_pos,
+                'quarter_width': width,
             })
         
         stage_bars.sort(key=lambda x: x['start_date'])
@@ -234,14 +286,14 @@ def add_demand(request):
             end_date = start_date.replace(year=start_date.year + ((start_date.month - 1 + duration_months) // 12),
                                          month=((start_date.month - 1 + duration_months) % 12) + 1)
             
-            # Create the initial stage (if needed)
-            # Uncomment and modify if you want to automatically create an initial stage
-            # DemandStagePeriod.objects.create(
-            #     demand=demand,
-            #     stage=Stage.DEMAND_TO_BE_INITIATED,
-            #     start_date=start_date,
-            #     end_date=end_date
-            # )
+            # Create an initial dark grey mini progress bar for the new demand
+            # This will be a mini progress bar that spans exactly the demand's duration
+            DemandStagePeriod.objects.create(
+                demand=demand,
+                stage='mini_progress',  # Using a custom stage identifier for mini progress bar
+                start_date=start_date,
+                end_date=end_date
+            )
             
             return redirect('demand_list')
     else:
@@ -253,7 +305,34 @@ def edit_demand(request, demand_id):
     if request.method == 'POST':
         form = DemandForm(request.POST, instance=demand)
         if form.is_valid():
-            form.save()
+            demand = form.save()
+            
+            # Get the updated start date and duration from the form
+            start_date = form.cleaned_data['start_date']
+            duration_months = form.cleaned_data['duration_months']
+            
+            if start_date and duration_months:
+                # Calculate the end date based on start date and duration in months
+                end_date = start_date.replace(year=start_date.year + ((start_date.month - 1 + duration_months) // 12),
+                                          month=((start_date.month - 1 + duration_months) % 12) + 1)
+                
+                # Check if this demand has a mini progress bar
+                mini_bar = demand.stages.filter(stage='mini_progress').first()
+                
+                if mini_bar:
+                    # Update the existing mini progress bar
+                    mini_bar.start_date = start_date
+                    mini_bar.end_date = end_date
+                    mini_bar.save()
+                else:
+                    # Create a new mini progress bar if none exists
+                    DemandStagePeriod.objects.create(
+                        demand=demand,
+                        stage='mini_progress',  # Using custom mini_progress stage
+                        start_date=start_date,
+                        end_date=end_date
+                    )
+            
             messages.success(request, 'Demand updated successfully.')
             return redirect('demand_list')
     else:

@@ -86,6 +86,8 @@ STAGE_COLORS = {
     Stage.PARTIALLY_PAID: "#e31a1c",
     Stage.PAYMENT_RELEASED: "#fdbf6f",
     Stage.AVAILABLE_FOR_INTEGRATION: "#ff7f00",
+    # Custom stage for mini progress bar
+    'mini_progress': "#444444",  # Dark grey color for mini progress bar
 }
 
 STAGE_ORDER = {

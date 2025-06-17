@@ -379,42 +379,71 @@
           <tr>
             <th>Demand</th>
             <th class="timeline-header-cell">
-              <!-- Simple table-based year and quarter header -->
+              <!-- Static global timeline from 2025 to 2029 with quarters -->
               <div style="overflow-x: auto; max-width: 100%;">
               <table class="timeline-header" style="width:100%; table-layout:fixed;">
                 <colgroup>
-                  {% for year in timeline_years %}
-                    {% if not forloop.last or forloop.last and forloop.counter > 1 %}
-                      <col style="width:5%">
-                      <col style="width:5%">
-                      <col style="width:5%">
-                      <col style="width:5%">
-                    {% endif %}
-                  {% endfor %}
+                  <!-- 5 years x 4 quarters = 20 columns -->
+                  <col style="width:5%">
+                  <col style="width:5%">
+                  <col style="width:5%">
+                  <col style="width:5%">
+                  <col style="width:5%">
+                  <col style="width:5%">
+                  <col style="width:5%">
+                  <col style="width:5%">
+                  <col style="width:5%">
+                  <col style="width:5%">
+                  <col style="width:5%">
+                  <col style="width:5%">
+                  <col style="width:5%">
+                  <col style="width:5%">
+                  <col style="width:5%">
+                  <col style="width:5%">
+                  <col style="width:5%">
+                  <col style="width:5%">
+                  <col style="width:5%">
+                  <col style="width:5%">
                 </colgroup>
                 <tr>
-                  {% for year in timeline_years %}
-                    {% if not forloop.last or forloop.last and forloop.counter > 1 %}
-                      <th colspan="4">{{ year.label }}</th>
-                    {% endif %}
-                  {% endfor %}
+                  <th colspan="4">2025</th>
+                  <th colspan="4">2026</th>
+                  <th colspan="4">2027</th>
+                  <th colspan="4">2028</th>
+                  <th colspan="4">2029</th>
                 </tr>
                 <tr class="quarter-row">
-                  {% for year in timeline_years %}
-                    {% if not forloop.last or forloop.last and forloop.counter > 1 %}
-                      <!-- {{ year.label }} Quarters -->
-                      <td class="quarter-cell">Q1</td>
-                      <td class="quarter-cell">Q2</td>
-                      <td class="quarter-cell">Q3</td>
-                      <td class="quarter-cell">Q4</td>
-                    {% endif %}
-                  {% endfor %}
+                  <!-- 2025 Quarters -->
+                  <td class="quarter-cell">Q1</td>
+                  <td class="quarter-cell">Q2</td>
+                  <td class="quarter-cell">Q3</td>
+                  <td class="quarter-cell">Q4</td>
+                  <!-- 2026 Quarters -->
+                  <td class="quarter-cell">Q1</td>
+                  <td class="quarter-cell">Q2</td>
+                  <td class="quarter-cell">Q3</td>
+                  <td class="quarter-cell">Q4</td>
+                  <!-- 2027 Quarters -->
+                  <td class="quarter-cell">Q1</td>
+                  <td class="quarter-cell">Q2</td>
+                  <td class="quarter-cell">Q3</td>
+                  <td class="quarter-cell">Q4</td>
+                  <!-- 2028 Quarters -->
+                  <td class="quarter-cell">Q1</td>
+                  <td class="quarter-cell">Q2</td>
+                  <td class="quarter-cell">Q3</td>
+                  <td class="quarter-cell">Q4</td>
+                  <!-- 2029 Quarters -->
+                  <td class="quarter-cell">Q1</td>
+                  <td class="quarter-cell">Q2</td>
+                  <td class="quarter-cell">Q3</td>
+                  <td class="quarter-cell">Q4</td>
                 </tr>
               </table>
               </div>
               
               <div class="timeline-global-date">
-                {{ global_timeline_start }} to {{ global_timeline_end }}
+                2025 to 2029
               </div>
             </th>
           </tr>
@@ -431,28 +460,36 @@
             </td>
             <td>
               <div class="progress-bar-container">
-                <!-- Demand timeline boundary -->
-                <div class="demand-timeline" style="width: {{ d.position.width_percent }}%; left: {{ d.position.start_percent }}%;">
-                  <span class="timeline-date-label start">{{ d.position.start_date }}</span>
-                  <span class="timeline-date-label end">{{ d.position.end_date }}</span>
+                <!-- Using the global timeline (2025-2029) instead of demand-specific timeline -->
+                <div class="demand-timeline" style="width: 100%; left: 0%;">
+                  <!-- Removed dynamic timeline labels in favor of global timeline -->
                 
                   {% for stage in d.stages %}
-                  <div
-                    class="progress-bar"
-                    style="width: {{ stage.relative_width_percent }}%; background-color: {{ stage.color }}; left: {{ stage.relative_start_percent }}%;"
-                    data-stage-id="{{ stage.id }}"
-                    data-stage-name="{{ stage.stage_verbose }}"
-                    data-start-date="{{ stage.start_date }}"
-                    data-end-date="{{ stage.end_date }}"
-                    onclick="openModal(this)"
-                  >
-                    <span class="stage-number">{{ stage.stage_number }}</span>
-                    <div class="tooltip">
-                      <strong>{{ stage.stage_verbose }}</strong><br />
-                      {{ stage.start_date }} - {{ stage.end_date }}<br />
-                      Duration: {{ stage.duration }} days
-                    </div>
-                  </div>
+                    <!-- Using quarter calculation values from the view -->
+                    {% if stage.start_year >= 2025 and stage.start_year <= 2029 and stage.end_year >= 2025 and stage.end_year <= 2029 %}
+                          <div
+                            class="progress-bar"
+                            style="width: {{ stage.quarter_width }}%; background-color: {{ stage.color }}; left: {{ stage.quarter_start_pos }}%;"
+                            data-stage-id="{{ stage.id }}"
+                            data-stage-name="{{ stage.stage_verbose }}"
+                            data-start-date="{{ stage.start_date }}"
+                            data-end-date="{{ stage.end_date }}"
+                            onclick="openModal(this)"
+                          >
+                            {% if stage.stage != 'mini_progress' %}
+                              <span class="stage-number">{{ stage.stage_number }}</span>
+                            {% endif %}
+                            <div class="tooltip">
+                              {% if stage.stage == 'mini_progress' %}
+                                <strong>Duration</strong><br />
+                              {% else %}
+                                <strong>{{ stage.stage_verbose }}</strong><br />
+                              {% endif %}
+                              {{ stage.start_date }} - {{ stage.end_date }}<br />
+                              Duration: {{ stage.duration }} days
+                            </div>
+                          </div>
+                      {% endif %}
                   {% endfor %}
                 </div>
               </div>
@@ -476,12 +513,7 @@
                 {% endwith %}
                 {% endif %}
                 
-                <!-- Timeline span info -->
-                {% if d.position %}
-                <span class="timeline-info">
-                  Timeline: {{ d.position.start_date }} to {{ d.position.end_date }}
-                </span>
-                {% endif %}
+                <!-- Using global timeline instead of per-demand timeline -->
               </div>
             </td>
           </tr>
