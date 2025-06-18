@@ -121,6 +121,9 @@ def demand_list(request):
     
     # === Demand and Stage Bars ===
     demand_data = []
+    
+    # Get current stages from session if available
+    demand_current_stages = request.session.get('demand_current_stages', {})
     for demand in demands:
         stages = list(demand.stages.all())
         stage_bars = []
@@ -200,9 +203,25 @@ def demand_list(request):
             
             # Handle stage number and label safely based on stage type
             stage_number = STAGE_ORDER.get(s.stage, 0)
+            stage_color = STAGE_COLORS.get(s.stage, '#888')
+            should_show_number = True
+            
             # Check if this is our custom mini progress stage
             if s.stage == 'mini_progress':
-                stage_verbose = "Duration"
+                # Get the current stage for this demand from the session
+                demand_id_str = str(demand.id)
+                if demand_id_str in demand_current_stages:
+                    # Use the current stage color and number
+                    current_stage = demand_current_stages[demand_id_str]
+                    stage_number = STAGE_ORDER.get(current_stage, 0)
+                    stage_color = STAGE_COLORS.get(current_stage, '#444444')
+                    stage_verbose = Stage(current_stage).label
+                    should_show_number = True
+                else:
+                    # Default mini progress bar appearance
+                    stage_verbose = "Duration"
+                    stage_color = '#444444'  # Dark gray
+                    should_show_number = False
             else:
                 stage_verbose = Stage(s.stage).label
                 
@@ -211,7 +230,7 @@ def demand_list(request):
                 'stage': s.stage,
                 'stage_number': stage_number,
                 'stage_verbose': stage_verbose,
-                'color': STAGE_COLORS.get(s.stage, '#888'),
+                'color': stage_color,
                 'start_percent': stage_start_percent,
                 'width_percent': stage_width_percent,
                 'relative_start_percent': stage_relative_start,
@@ -229,6 +248,9 @@ def demand_list(request):
                 'quarter_start_pos': start_pos,
                 'quarter_end_pos': end_pos,
                 'quarter_width': width,
+                # Add number and visibility flag for template
+                'number': stage_number,
+                'should_show_number': should_show_number
             })
         
         stage_bars.sort(key=lambda x: x['start_date'])
@@ -381,7 +403,41 @@ def update_stage(request):
                     error_message = f"First stage must be 0 (Demand to be Initiated), but got {new_stage_number}."
             
             if valid_sequence:
-                form.save()
+                # Save the new stage
+                new_stage_period = form.save()
+                
+                # Update the mini progress bar to match the current stage
+                demand = new_stage_period.demand
+                mini_bar = demand.stages.filter(stage='mini_progress').first()
+                
+                if mini_bar:
+                    # Get start date and duration from the demand
+                    start_date = demand.start_date
+                    duration_months = demand.duration_months
+                    
+                    # Calculate the end date based on duration
+                    if start_date and duration_months:
+                        end_date = start_date.replace(
+                            year=start_date.year + ((start_date.month - 1 + duration_months) // 12),
+                            month=((start_date.month - 1 + duration_months) % 12) + 1
+                        )
+                        
+                        # Update the mini bar's start and end dates but keep the 'mini_progress' identifier
+                        mini_bar.start_date = start_date
+                        mini_bar.end_date = end_date
+                        mini_bar.save()
+                        
+                        # Store the current stage information in the session to use in the template
+                        if 'demand_current_stages' not in request.session:
+                            request.session['demand_current_stages'] = {}
+                        
+                        # Map the demand ID to its current stage
+                        demand_current_stages = request.session.get('demand_current_stages', {})
+                        demand_current_stages[str(demand.id)] = new_stage_period.stage
+                        request.session['demand_current_stages'] = demand_current_stages
+                        # Make sure the session is saved
+                        request.session.modified = True
+                
                 return redirect('demand_list')
         
     else:
@@ -396,6 +452,7 @@ def update_stage(request):
         'form': form,
         'stage_order': stage_order,
         'error_message': error_message,
+        'stage_colors': STAGE_COLORS,
     })
 
 def edit_stage_dates(request):
