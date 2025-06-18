@@ -452,6 +452,7 @@ def update_stage(request):
         'form': form,
         'stage_order': stage_order,
         'error_message': error_message,
+        'stage_colors': STAGE_COLORS,
     })
 
 def edit_stage_dates(request):
