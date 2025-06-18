@@ -308,16 +308,24 @@
     width: 100%;
     height: 100%;
     overflow: auto;
-    background-color: rgba(0,0,0,0.4);
+    background-color: rgba(0,0,0,0.7);
   }
   
   .modal-content {
-    background-color: #fefefe;
-    margin: 15% auto;
-    padding: 20px;
+    background-color: white;
+    margin: 10% auto;
+    padding: 25px;
+    border-radius: 8px;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+    max-width: 450px;
+    position: relative;
+    animation: modalAppear 0.3s ease;
     border: 1px solid #ddd;
-    width: 300px;
-    border-radius: 4px;
+  }
+  
+  @keyframes modalAppear {
+    from {opacity: 0; transform: translateY(-20px);}
+    to {opacity: 1; transform: translateY(0);}
   }
   
   .close-btn {
@@ -525,10 +533,10 @@
                 </div>
                 
                 <!-- Stage Detail Bar (initially hidden) -->
-                <div id="stage-detail-{{ d.demand.id }}" class="stage-detail-bar" style="display: none; position: relative; height: 25px; width: 100%; background-color: #f5f5f5; border: 1px solid #ccc; padding: 4px; margin-top: 5px; margin-bottom: 5px; text-align: center; overflow: hidden;">
+                <div id="stage-detail-{{ d.demand.id }}" class="stage-detail-bar" style="display: none; position: relative; height: 50px; width: 100%; background-color: #f5f5f5; border: 1px solid #ccc; padding: 4px; margin-top: 5px; margin-bottom: 5px; text-align: center; overflow: hidden;">
                   <div style="display: flex; width: 100%; justify-content: space-evenly; align-items: center;">
                     {% for i in "01234567891011121314151617181920212223242526"|make_list|slice:":26" %}
-                      <div class="stage-detail-segment" style="height: 18px; width: 3%; min-width: 12px; background-color: #ddd; border: 1px solid #999; box-shadow: 0px 1px 2px rgba(0,0,0,0.1); box-sizing: border-box;"></div>
+                      <div class="stage-detail-segment" style="height: 36px; width: 3%; min-width: 12px; background-color: #ddd; border: 1px solid #999; box-shadow: 0px 1px 2px rgba(0,0,0,0.1); box-sizing: border-box;"></div>
                     {% endfor %}
                   </div>
                 </div>
@@ -665,18 +673,27 @@
   <!-- Legend has been moved to the top right of the page -->
 
   <!-- Edit modal -->
-  <div id="editModal" class="modal">
+  <div id="editModal" class="modal" style="display: none;">
     <div class="modal-content">
       <span class="close-btn" onclick="closeModal()">&times;</span>
       <h3>Edit Stage Dates</h3>
-      <form method="post" action="{% url 'edit_stage_dates' %}">
+      <form method="post" action="{% url 'edit_stage_dates' %}" style="margin-top: 15px;">
         {% csrf_token %}
         <input type="hidden" name="stage_id" id="modalStageId" />
-        <label for="modalStartDate">Start Date:</label>
-        <input type="date" name="start_date" id="modalStartDate" required />
-        <label for="modalEndDate">End Date:</label>
-        <input type="date" name="end_date" id="modalEndDate" required />
-        <input type="submit" value="Save" />
+        
+        <div style="margin-bottom: 15px;">
+          <label for="modalStartDate" style="display: block; margin-bottom: 5px; font-weight: bold;">Start Date:</label>
+          <input type="date" name="start_date" id="modalStartDate" required style="width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 4px;" />
+        </div>
+        
+        <div style="margin-bottom: 20px;">
+          <label for="modalEndDate" style="display: block; margin-bottom: 5px; font-weight: bold;">End Date:</label>
+          <input type="date" name="end_date" id="modalEndDate" required style="width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 4px;" />
+        </div>
+        
+        <div style="text-align: center;">
+          <input type="submit" value="Save" style="background-color: #4CAF50; color: white; padding: 10px 20px; border: none; border-radius: 4px; cursor: pointer; font-size: 16px;" />
+        </div>
       </form>
     </div>
   </div>
@@ -698,6 +715,11 @@
   function closeModal() {
     document.getElementById('editModal').style.display = 'none';
   }
+  
+  // Make sure modal is hidden on page load
+  document.addEventListener('DOMContentLoaded', function() {
+    document.getElementById('editModal').style.display = 'none';
+  });
   
   function toggleDetailBar(demandId) {
     alert('Toggling detail bar for demand: ' + demandId); // Debug alert
