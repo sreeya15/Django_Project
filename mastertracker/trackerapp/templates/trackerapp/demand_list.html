@@ -465,8 +465,8 @@
                   <!-- Removed dynamic timeline labels in favor of global timeline -->
                 
                   {% for stage in d.stages %}
-                    <!-- Using quarter calculation values from the view -->
-                    {% if stage.start_year >= 2025 and stage.start_year <= 2029 and stage.end_year >= 2025 and stage.end_year <= 2029 %}
+                    <!-- Only show mini progress bar -->
+                    {% if stage.stage == 'mini_progress' and stage.start_year >= 2025 and stage.start_year <= 2029 and stage.end_year >= 2025 and stage.end_year <= 2029 %}
                           <div
                             class="progress-bar"
                             style="width: {{ stage.quarter_width }}%; background-color: {{ stage.color }}; left: {{ stage.quarter_start_pos }}%;"
