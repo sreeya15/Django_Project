@@ -512,7 +512,7 @@
                               data-stage-name="{{ stage.stage_verbose }}"
                               data-start-date="{{ stage.start_date }}"
                               data-end-date="{{ stage.end_date }}"
-                              onclick="openModal(this)"
+                              onclick="event.stopPropagation(); openModal(this); return false;"
                             >
                               {% if stage.should_show_number %}
                                 <span class="stage-number">{{ stage.number }}</span>
@@ -672,11 +672,11 @@
 
   <!-- Legend has been moved to the top right of the page -->
 
-  <!-- Edit modal -->
-  <div id="editModal" class="modal" style="display: none;">
-    <div class="modal-content">
-      <span class="close-btn" onclick="closeModal()">&times;</span>
-      <h3>Edit Stage Dates</h3>
+  <!-- Edit modal - implemented with basic styling -->
+  <div id="editModalOverlay" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.7); z-index: 9999;">
+    <div id="editModalContent" style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); background-color: white; padding: 30px; border-radius: 8px; width: 400px; box-shadow: 0 0 20px rgba(0,0,0,0.3);">
+      <span onclick="closeEditModal()" style="position: absolute; right: 15px; top: 10px; font-size: 24px; font-weight: bold; cursor: pointer;">&times;</span>
+      <h3 style="margin-top: 0; border-bottom: 1px solid #eee; padding-bottom: 10px;">Edit Stage Dates</h3>
       <form method="post" action="{% url 'edit_stage_dates' %}" style="margin-top: 15px;">
         {% csrf_token %}
         <input type="hidden" name="stage_id" id="modalStageId" />
@@ -693,6 +693,7 @@
         
         <div style="text-align: center;">
           <input type="submit" value="Save" style="background-color: #4CAF50; color: white; padding: 10px 20px; border: none; border-radius: 4px; cursor: pointer; font-size: 16px;" />
+          <button type="button" onclick="closeEditModal()" style="background-color: #f44336; color: white; padding: 10px 20px; border: none; border-radius: 4px; cursor: pointer; font-size: 16px; margin-left: 10px;">Cancel</button>
         </div>
       </form>
     </div>
@@ -700,25 +701,35 @@
 
 <script>
   function openModal(bar) {
-    const modal = document.getElementById('editModal');
+    console.log('openModal called');
+    
+    const modalOverlay = document.getElementById('editModalOverlay');
+    if (!modalOverlay) {
+      console.error('Modal overlay element not found');
+      return;
+    }
+    
     const stageId = bar.getAttribute('data-stage-id');
     const startDate = bar.getAttribute('data-start-date');
     const endDate = bar.getAttribute('data-end-date');
+    
+    console.log('Stage data:', { stageId, startDate, endDate });
     
     document.getElementById('modalStageId').value = stageId;
     document.getElementById('modalStartDate').value = startDate;
     document.getElementById('modalEndDate').value = endDate;
     
-    modal.style.display = 'block';
+    // Display the modal overlay
+    modalOverlay.style.display = 'block';
   }
   
-  function closeModal() {
-    document.getElementById('editModal').style.display = 'none';
+  function closeEditModal() {
+    document.getElementById('editModalOverlay').style.display = 'none';
   }
   
   // Make sure modal is hidden on page load
   document.addEventListener('DOMContentLoaded', function() {
-    document.getElementById('editModal').style.display = 'none';
+    document.getElementById('editModalOverlay').style.display = 'none';
   });
   
   function toggleDetailBar(demandId) {
