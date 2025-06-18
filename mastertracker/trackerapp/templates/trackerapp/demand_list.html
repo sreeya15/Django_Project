@@ -525,10 +525,10 @@
                 </div>
                 
                 <!-- Stage Detail Bar (initially hidden) -->
-                <div id="stage-detail-{{ d.demand.id }}" class="stage-detail-bar" style="display: none; position: relative; height: 15px; width: 100%; background-color: #f5f5f5; border: 1px solid #ccc; padding: 2px 0; margin-top: 0; margin-bottom: 5px; text-align: center; white-space: nowrap; overflow: hidden;">
-                  <div style="display: flex; width: 100%; justify-content: space-between; align-items: center;">
+                <div id="stage-detail-{{ d.demand.id }}" class="stage-detail-bar" style="display: none; position: relative; height: 25px; width: 100%; background-color: #f5f5f5; border: 1px solid #ccc; padding: 4px; margin-top: 5px; margin-bottom: 5px; text-align: center; overflow: hidden;">
+                  <div style="display: flex; width: 100%; justify-content: space-evenly; align-items: center;">
                     {% for i in "01234567891011121314151617181920212223242526"|make_list|slice:":26" %}
-                      <div class="stage-detail-segment" style="height: 12px; width: 10px; min-width: 10px; background-color: #ddd; border: 1px solid #999; box-sizing: border-box;"></div>
+                      <div class="stage-detail-segment" style="height: 18px; width: 3%; min-width: 12px; background-color: #ddd; border: 1px solid #999; box-shadow: 0px 1px 2px rgba(0,0,0,0.1); box-sizing: border-box;"></div>
                     {% endfor %}
                   </div>
                 </div>
